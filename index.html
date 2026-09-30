@@ -195,6 +195,29 @@
   transform: scale(0.96);
 }
 
+    #historyButton {
+  flex-shrink: 0;
+
+  margin-right: 12px;
+
+  padding: 7px 10px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #2c2c2e;
+  color: white;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+#historyButton:active {
+  transform: scale(0.96);
+}
+
 
     /* PDF表示領域 */
 
@@ -499,10 +522,14 @@
     <header id="topBar">
 
   <button id="changePDFButton">
-    PDF変更
-  </button>
+  PDF変更
+</button>
 
-  <div id="fileName">
+<button id="historyButton">
+  履歴
+</button>
+
+<div id="fileName">
     PDF
   </div>
 
@@ -659,6 +686,11 @@
     const changePDFButton =
   document.getElementById(
     "changePDFButton"
+  );
+
+    const historyButton =
+  document.getElementById(
+    "historyButton"
   );
 
     const startScreen =
@@ -2212,6 +2244,18 @@ await renderPage(
     /* =========================
        PDF選択
        ========================= */
+
+    historyButton.addEventListener(
+  "click",
+  () => {
+
+    /*
+      履歴画面は
+      次のSTEPで実装
+    */
+
+  }
+);
 
     changePDFButton.addEventListener(
   "click",
