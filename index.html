@@ -668,6 +668,50 @@ const jumpButton =
     return;
   }
 
+  controlsHidden =
+    !controlsHidden;
+
+  viewerScreen.classList.toggle(
+    "controlsHidden",
+    controlsHidden
+  );
+
+  /*
+    操作パネルのアニメーションが
+    終わるのを待つ
+  */
+
+  await wait(280);
+
+  /*
+    PDFを新しい表示領域に合わせて
+    再描画する
+  */
+
+  isRendering = false;
+
+  await renderPage(
+    currentPage,
+    false
+  );
+}
+
+
+/*
+  PDF表示部分をタップしたとき
+*/
+
+pdfArea.addEventListener(
+  "click",
+  async event => {
+
+    event.preventDefault();
+
+    await toggleControls();
+
+  }
+);
+
       pdfArea.addEventListener(
   "click",
   async event => {
