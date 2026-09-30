@@ -626,12 +626,10 @@ const jumpButton =
 
     let slideInterval = 3000;
 
-    #pdfCanvas {
-  transition: opacity 0.28s ease;
-}
-
-#pdfCanvas.pageFadeOut {
-  opacity: 0;
+    function wait(ms) {
+  return new Promise(
+    resolve => setTimeout(resolve, ms)
+  );
 }
 
     intervalSelect.addEventListener(
