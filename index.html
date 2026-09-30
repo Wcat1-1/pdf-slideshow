@@ -1249,6 +1249,15 @@ pageInput.max =
 
 }
 
+    function saveSlideInterval() {
+
+  localStorage.setItem(
+    "PDFSlideshowInterval",
+    String(slideInterval)
+  );
+
+}
+
     function getTouchDistance(
   touch1,
   touch2
@@ -1647,6 +1656,8 @@ if (
 
     slideInterval =
       Number(intervalSelect.value);
+
+    saveSlideInterval();
 
     /*
       再生中に変更した場合は
@@ -2334,6 +2345,29 @@ jumpTotal.textContent =
       }
     );
 
+const savedInterval =
+  Number(
+    localStorage.getItem(
+      "PDFSlideshowInterval"
+    )
+  );
+
+if (
+  savedInterval === 1000 ||
+  savedInterval === 2000 ||
+  savedInterval === 3000 ||
+  savedInterval === 5000 ||
+  savedInterval === 10000
+) {
+
+  slideInterval =
+    savedInterval;
+
+  intervalSelect.value =
+    String(savedInterval);
+
+}
+    
     restoreSavedPDF();
 
   </script>
