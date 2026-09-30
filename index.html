@@ -20,6 +20,7 @@
   <style>
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html,
@@ -29,47 +30,54 @@
       height: 100%;
       background: #111;
       color: white;
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         sans-serif;
+
+      overflow: hidden;
     }
 
-    body {
-      min-height: 100vh;
-      min-height: 100dvh;
+    button {
+      font: inherit;
     }
 
-    /* PDF選択画面 */
+    /* =========================
+       PDF選択画面
+       ========================= */
+
     #startScreen {
-      min-height: 100vh;
-      min-height: 100dvh;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
 
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
 
-      text-align: center;
-
       padding:
         env(safe-area-inset-top)
         20px
         env(safe-area-inset-bottom);
+
+      text-align: center;
     }
 
-    h1 {
-      font-size: 32px;
+    #startScreen h1 {
       margin: 0 0 12px;
+      font-size: 32px;
     }
 
     #startScreen p {
+      margin: 0 0 32px;
       color: #aaa;
-      margin-bottom: 32px;
     }
 
     .selectButton {
       display: inline-block;
+
       padding: 16px 28px;
 
       background: white;
@@ -78,7 +86,7 @@
       border-radius: 14px;
 
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 700;
 
       cursor: pointer;
     }
@@ -87,7 +95,19 @@
       display: none;
     }
 
-    /* PDF表示画面 */
+    #errorMessage {
+      display: none;
+
+      margin-top: 22px;
+
+      color: #ff8080;
+    }
+
+
+    /* =========================
+       PDF表示画面
+       ========================= */
+
     #viewerScreen {
       display: none;
 
@@ -96,21 +116,30 @@
       height: 100dvh;
 
       flex-direction: column;
+
+      background: #111;
     }
 
+
+    /* 上部バー */
+
     #topBar {
-      min-height: 56px;
+      flex-shrink: 0;
 
       display: flex;
       align-items: center;
-      justify-content: space-between;
+
+      min-height: 58px;
 
       padding:
         calc(8px + env(safe-area-inset-top))
         14px
         8px;
 
-      background: rgba(20, 20, 20, 0.95);
+      background: rgba(20,20,20,0.96);
+
+      border-bottom:
+        1px solid rgba(255,255,255,0.08);
     }
 
     #fileName {
@@ -121,50 +150,119 @@
       text-overflow: ellipsis;
 
       font-size: 14px;
-      text-align: left;
+      font-weight: 600;
     }
 
     #pageInfo {
+      flex-shrink: 0;
+
       margin-left: 12px;
-      font-size: 14px;
+
       color: #ccc;
+
+      font-size: 14px;
     }
 
+
+    /* PDF表示領域 */
+
     #pdfArea {
+      position: relative;
+
       flex: 1;
 
+      min-height: 0;
+
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
 
-      overflow: auto;
+      overflow: hidden;
 
-      padding: 10px;
+      padding: 8px;
     }
 
     #pdfCanvas {
       display: block;
 
-      max-width: 100%;
-      max-height: 100%;
-
       background: white;
 
       box-shadow:
-        0 4px 20px rgba(0,0,0,0.45);
+        0 4px 20px rgba(0,0,0,0.5);
     }
+
+
+    /* =========================
+       下部操作バー
+       ========================= */
+
+    #bottomBar {
+      flex-shrink: 0;
+
+      display: grid;
+
+      grid-template-columns:
+        1fr 1.15fr 1fr;
+
+      gap: 10px;
+
+      padding:
+        10px
+        12px
+        calc(10px + env(safe-area-inset-bottom));
+
+      background: rgba(20,20,20,0.96);
+
+      border-top:
+        1px solid rgba(255,255,255,0.08);
+    }
+
+    .controlButton {
+      min-height: 50px;
+
+      border: 0;
+
+      border-radius: 14px;
+
+      background: #2c2c2e;
+      color: white;
+
+      font-size: 16px;
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    .controlButton:active {
+      transform: scale(0.96);
+    }
+
+    #playButton {
+      background: white;
+      color: #111;
+    }
+
+    .controlButton:disabled {
+      opacity: 0.35;
+    }
+
+
+    /* =========================
+       読み込み表示
+       ========================= */
 
     #loading {
       position: fixed;
+
       inset: 0;
 
       display: none;
-      align-items: center;
       justify-content: center;
-
-      background: rgba(0,0,0,0.7);
+      align-items: center;
 
       z-index: 100;
+
+      background: rgba(0,0,0,0.7);
     }
 
     #loadingBox {
@@ -177,49 +275,52 @@
       font-weight: 600;
     }
 
-    #errorMessage {
-      display: none;
-
-      padding: 20px;
-
-      color: #ff8080;
-
-      text-align: center;
-    }
   </style>
 </head>
 
 
 <body>
 
-  <!-- PDF選択画面 -->
+
+  <!-- =======================
+       PDF選択
+       ======================= -->
+
   <section id="startScreen">
 
     <h1>PDF Slideshow</h1>
 
-    <p>表示するPDFを選択してください</p>
+    <p>
+      表示するPDFを選択してください
+    </p>
 
     <label
       class="selectButton"
       for="pdfInput">
+
       PDFを選択
+
     </label>
 
     <input
       id="pdfInput"
       type="file"
-      accept="application/pdf,.pdf"
-    >
+      accept="application/pdf,.pdf">
 
     <div id="errorMessage"></div>
 
   </section>
 
 
-  <!-- PDF表示画面 -->
+
+  <!-- =======================
+       PDF Viewer
+       ======================= -->
+
   <section id="viewerScreen">
 
-    <div id="topBar">
+
+    <header id="topBar">
 
       <div id="fileName">
         PDF
@@ -229,19 +330,55 @@
         1 / 1
       </div>
 
-    </div>
+    </header>
 
 
-    <div id="pdfArea">
+
+    <main id="pdfArea">
 
       <canvas id="pdfCanvas"></canvas>
 
-    </div>
+    </main>
+
+
+
+    <footer id="bottomBar">
+
+      <button
+        id="prevButton"
+        class="controlButton">
+
+        ◀︎ 前へ
+
+      </button>
+
+
+      <button
+        id="playButton"
+        class="controlButton">
+
+        ▶︎ 再生
+
+      </button>
+
+
+      <button
+        id="nextButton"
+        class="controlButton">
+
+        次へ ▶︎
+
+      </button>
+
+    </footer>
+
 
   </section>
 
 
-  <!-- 読み込み表示 -->
+
+  <!-- 読み込み中 -->
+
   <div id="loading">
 
     <div id="loadingBox">
@@ -250,12 +387,6 @@
 
   </div>
 
-
-  <!-- PDF.js -->
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs"
-    type="module">
-  </script>
 
 
   <script type="module">
@@ -267,6 +398,11 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
 
+
+
+    /* =========================
+       要素取得
+       ========================= */
 
     const pdfInput =
       document.getElementById("pdfInput");
@@ -289,106 +425,401 @@
     const pageInfo =
       document.getElementById("pageInfo");
 
+    const prevButton =
+      document.getElementById("prevButton");
+
+    const playButton =
+      document.getElementById("playButton");
+
+    const nextButton =
+      document.getElementById("nextButton");
+
     const loading =
       document.getElementById("loading");
 
     const errorMessage =
       document.getElementById("errorMessage");
 
+    const pdfArea =
+      document.getElementById("pdfArea");
+
+
+
+    /* =========================
+       状態
+       ========================= */
 
     let pdfDocument = null;
 
     let currentPage = 1;
 
+    let isRendering = false;
+
+    let isPlaying = false;
+
+    let playTimer = null;
+
+
+    /*
+      最初は3秒ごとに
+      ページを送ります。
+    */
+
+    const slideInterval = 3000;
+
+
+
+    /* =========================
+       PDF描画
+       ========================= */
 
     async function renderPage(pageNumber) {
 
-      const page =
-        await pdfDocument.getPage(pageNumber);
+      if (
+        !pdfDocument ||
+        isRendering
+      ) {
+        return;
+      }
 
 
-      const originalViewport =
-        page.getViewport({
-          scale: 1
-        });
+      isRendering = true;
 
 
-      /*
-        iPhoneの画面幅に合わせて
-        PDFを縮小・拡大します。
-      */
+      try {
 
-      const availableWidth =
-        window.innerWidth - 20;
-
-      const availableHeight =
-        window.innerHeight - 100;
+        const page =
+          await pdfDocument.getPage(
+            pageNumber
+          );
 
 
-      const widthScale =
-        availableWidth /
-        originalViewport.width;
-
-      const heightScale =
-        availableHeight /
-        originalViewport.height;
+        const originalViewport =
+          page.getViewport({
+            scale: 1
+          });
 
 
-      const scale =
-        Math.min(
-          widthScale,
-          heightScale
+        /*
+          実際のPDF表示領域のサイズを
+          取得します。
+        */
+
+        const areaWidth =
+          Math.max(
+            pdfArea.clientWidth - 16,
+            1
+          );
+
+        const areaHeight =
+          Math.max(
+            pdfArea.clientHeight - 16,
+            1
+          );
+
+
+        const widthScale =
+          areaWidth /
+          originalViewport.width;
+
+        const heightScale =
+          areaHeight /
+          originalViewport.height;
+
+
+        const displayScale =
+          Math.min(
+            widthScale,
+            heightScale
+          );
+
+
+        /*
+          Retina対応。
+          描画データは高解像度、
+          CSS表示サイズは実寸にします。
+        */
+
+        const pixelRatio =
+          Math.min(
+            window.devicePixelRatio || 1,
+            2
+          );
+
+
+        const renderViewport =
+          page.getViewport({
+
+            scale:
+              displayScale *
+              pixelRatio
+
+          });
+
+
+        canvas.width =
+          Math.floor(
+            renderViewport.width
+          );
+
+        canvas.height =
+          Math.floor(
+            renderViewport.height
+          );
+
+
+        canvas.style.width =
+          `${
+            renderViewport.width /
+            pixelRatio
+          }px`;
+
+        canvas.style.height =
+          `${
+            renderViewport.height /
+            pixelRatio
+          }px`;
+
+
+        context.clearRect(
+          0,
+          0,
+          canvas.width,
+          canvas.height
         );
 
 
-      /*
-        Retinaディスプレイ対応
-      */
+        await page.render({
 
-      const pixelRatio =
-        window.devicePixelRatio || 1;
+          canvasContext:
+            context,
 
+          viewport:
+            renderViewport
 
-      const viewport =
-        page.getViewport({
-          scale:
-            scale * pixelRatio
-        });
+        }).promise;
 
 
-      canvas.width =
-        viewport.width;
-
-      canvas.height =
-        viewport.height;
+        currentPage =
+          pageNumber;
 
 
-      canvas.style.width =
-        `${viewport.width / pixelRatio}px`;
-
-      canvas.style.height =
-        `${viewport.height / pixelRatio}px`;
+        pageInfo.textContent =
+          `${currentPage} / ${pdfDocument.numPages}`;
 
 
-      await page.render({
-
-        canvasContext:
-          context,
-
-        viewport:
-          viewport
-
-      }).promise;
+        updateButtons();
 
 
-      pageInfo.textContent =
-        `${pageNumber} / ${pdfDocument.numPages}`;
+      } catch (error) {
+
+        console.error(
+          "Page render error:",
+          error
+        );
+
+      } finally {
+
+        isRendering = false;
+
+      }
+
     }
 
 
+
+    /* =========================
+       ボタン状態
+       ========================= */
+
+    function updateButtons() {
+
+      if (!pdfDocument) {
+        return;
+      }
+
+
+      prevButton.disabled =
+        currentPage <= 1;
+
+
+      /*
+        自動再生中は最終ページでも
+        次へボタンを無効にします。
+      */
+
+      nextButton.disabled =
+        currentPage >=
+        pdfDocument.numPages;
+
+    }
+
+
+
+    /* =========================
+       前ページ
+       ========================= */
+
+    prevButton.addEventListener(
+      "click",
+      async () => {
+
+        if (
+          !pdfDocument ||
+          isRendering ||
+          currentPage <= 1
+        ) {
+          return;
+        }
+
+
+        await renderPage(
+          currentPage - 1
+        );
+
+      }
+    );
+
+
+
+    /* =========================
+       次ページ
+       ========================= */
+
+    nextButton.addEventListener(
+      "click",
+      async () => {
+
+        if (
+          !pdfDocument ||
+          isRendering ||
+          currentPage >=
+            pdfDocument.numPages
+        ) {
+          return;
+        }
+
+
+        await renderPage(
+          currentPage + 1
+        );
+
+      }
+    );
+
+
+
+    /* =========================
+       自動再生
+       ========================= */
+
+    function startPlayback() {
+
+      if (
+        !pdfDocument ||
+        pdfDocument.numPages <= 1
+      ) {
+        return;
+      }
+
+
+      isPlaying = true;
+
+
+      playButton.textContent =
+        "⏸ 一時停止";
+
+
+      /*
+        3秒ごとに次ページへ。
+      */
+
+      playTimer =
+        setInterval(
+          async () => {
+
+            if (isRendering) {
+              return;
+            }
+
+
+            /*
+              最終ページまで来たら
+              今回は停止します。
+              ループは次のSTEPで追加。
+            */
+
+            if (
+              currentPage >=
+              pdfDocument.numPages
+            ) {
+
+              stopPlayback();
+
+              return;
+            }
+
+
+            await renderPage(
+              currentPage + 1
+            );
+
+          },
+
+          slideInterval
+        );
+
+    }
+
+
+    function stopPlayback() {
+
+      isPlaying = false;
+
+
+      playButton.textContent =
+        "▶︎ 再生";
+
+
+      if (playTimer) {
+
+        clearInterval(
+          playTimer
+        );
+
+        playTimer = null;
+
+      }
+
+    }
+
+
+    playButton.addEventListener(
+      "click",
+      () => {
+
+        if (isPlaying) {
+
+          stopPlayback();
+
+        } else {
+
+          startPlayback();
+
+        }
+
+      }
+    );
+
+
+
+    /* =========================
+       PDF選択
+       ========================= */
+
     pdfInput.addEventListener(
       "change",
-      async function () {
+      async () => {
 
         const file =
           pdfInput.files[0];
@@ -399,8 +830,12 @@
         }
 
 
+        stopPlayback();
+
+
         loading.style.display =
           "flex";
+
 
         errorMessage.style.display =
           "none";
@@ -434,18 +869,33 @@
             "flex";
 
 
-          await renderPage(
-            currentPage
+          /*
+            レイアウトが確定してから
+            PDFを描画します。
+          */
+
+          await new Promise(
+            resolve =>
+              requestAnimationFrame(
+                resolve
+              )
           );
+
+
+          await renderPage(1);
 
 
         } catch (error) {
 
-          console.error(error);
+          console.error(
+            "PDF load error:",
+            error
+          );
 
 
           errorMessage.textContent =
-            "PDFを読み込めませんでした。別のPDFで試してください。";
+            "PDFを読み込めませんでした。";
+
 
           errorMessage.style.display =
             "block";
@@ -462,6 +912,51 @@
 
         loading.style.display =
           "none";
+
+      }
+    );
+
+
+
+    /* =========================
+       画面回転対応
+       ========================= */
+
+    let resizeTimer = null;
+
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        if (!pdfDocument) {
+          return;
+        }
+
+
+        clearTimeout(
+          resizeTimer
+        );
+
+
+        resizeTimer =
+          setTimeout(
+            () => {
+
+              /*
+                同じページを
+                新しい画面サイズで再描画
+              */
+
+              isRendering = false;
+
+              renderPage(
+                currentPage
+              );
+
+            },
+            200
+          );
 
       }
     );
