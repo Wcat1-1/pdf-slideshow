@@ -191,6 +191,14 @@
         0 4px 20px rgba(0,0,0,0.5);
     }
 
+    #pdfCanvas {
+  transition: opacity 0.28s ease;
+}
+
+#pdfCanvas.pageFadeOut {
+  opacity: 0;
+}
+
 
     /* =========================
        下部操作バー
@@ -618,6 +626,14 @@ const jumpButton =
 
     let slideInterval = 3000;
 
+    #pdfCanvas {
+  transition: opacity 0.28s ease;
+}
+
+#pdfCanvas.pageFadeOut {
+  opacity: 0;
+}
+
     intervalSelect.addEventListener(
   "change",
   () => {
@@ -658,8 +674,13 @@ const jumpButton =
 
       isRendering = true;
 
+canvas.classList.add(
+  "pageFadeOut"
+);
 
-      try {
+await wait(280);
+
+try {
 
         const page =
           await pdfDocument.getPage(
@@ -786,6 +807,14 @@ const jumpButton =
 
         updateButtons();
 
+  requestAnimationFrame(
+  () => {
+    canvas.classList.remove(
+      "pageFadeOut"
+    );
+  }
+);
+
 
       } catch (error) {
 
@@ -796,9 +825,13 @@ const jumpButton =
 
       } finally {
 
-        isRendering = false;
+  canvas.classList.remove(
+    "pageFadeOut"
+  );
 
-      }
+  isRendering = false;
+
+}
 
     }
 
