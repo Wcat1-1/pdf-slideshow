@@ -308,7 +308,8 @@
   gap: 8px;
 }
 
-#intervalSelect {
+#intervalSelect,
+#transitionSelect {
   padding: 7px 10px;
 
   border: 0;
@@ -468,6 +469,30 @@
 
   <div class="settingItem">
 
+  <span>切替</span>
+
+  <select id="transitionSelect">
+    <option value="fade" selected>
+      Fade
+    </option>
+
+    <option value="slide">
+      Slide
+    </option>
+
+    <option value="zoom">
+      Zoom
+    </option>
+
+    <option value="card">
+      Card
+    </option>
+  </select>
+
+</div>
+
+  <div class="settingItem">
+
     <span>再生間隔</span>
 
     <select id="intervalSelect">
@@ -614,6 +639,11 @@
 
     const pdfArea =
       document.getElementById("pdfArea");
+
+    const transitionSelect =
+  document.getElementById(
+    "transitionSelect"
+  );
 
     const intervalSelect =
   document.getElementById("intervalSelect");
