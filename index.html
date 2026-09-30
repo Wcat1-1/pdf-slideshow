@@ -813,19 +813,18 @@ try {
   }
 );
 
+} catch (error) {
 
-      } catch (error) {
-
-        console.error(
-          "Page render error:",
-          error
-        );
-
-      } finally {
+  console.error(
+    "Page render error:",
+    error
+  );
 
   canvas.classList.remove(
     "pageFadeOut"
   );
+
+} finally {
 
   isRendering = false;
 
