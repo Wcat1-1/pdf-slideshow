@@ -874,6 +874,186 @@ function openDatabase() {
 
 }
 
+    async function loadSavedPDF() {
+
+  const db =
+    await openDatabase();
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const transaction =
+        db.transaction(
+          STORE_NAME,
+          "readonly"
+        );
+
+      const store =
+        transaction.objectStore(
+          STORE_NAME
+        );
+
+      const pdfRequest =
+        store.get(
+          "lastPDF"
+        );
+
+      const nameRequest =
+        store.get(
+          "lastPDFName"
+        );
+
+
+      transaction.oncomplete =
+        () => {
+
+          const savedPDF =
+            pdfRequest.result;
+
+          const savedName =
+            nameRequest.result;
+
+          db.close();
+
+
+          if (!savedPDF) {
+
+            resolve(null);
+
+            return;
+
+          }
+
+
+          resolve({
+            arrayBuffer: savedPDF,
+            name:
+              savedName ||
+              "保存したPDF"
+          });
+
+        };
+
+
+      transaction.onerror =
+        () => {
+
+          db.close();
+
+          reject(
+            transaction.error
+          );
+
+        };
+
+    }
+  );
+
+}
+
+    async function restoreSavedPDF() {
+
+  try {
+
+    const saved =
+      await loadSavedPDF();
+
+
+    /*
+      保存済みPDFがなければ
+      何もしない
+    */
+
+    if (!saved) {
+      return;
+    }
+
+
+    loading.style.display =
+      "flex";
+
+
+    pdfDocument =
+      await pdfjsLib
+        .getDocument({
+          data:
+            saved.arrayBuffer
+        })
+        .promise;
+
+
+    currentPage = 1;
+
+    resetZoom();
+
+
+    pageInput.value = 1;
+
+    pageInput.max =
+      pdfDocument.numPages;
+
+    jumpTotal.textContent =
+      `/ ${pdfDocument.numPages}`;
+
+
+    fileName.textContent =
+      saved.name;
+
+
+    startScreen.style.display =
+      "none";
+
+    viewerScreen.style.display =
+      "flex";
+
+
+    /*
+      PDF表示領域のサイズが
+      確定するまで待つ
+    */
+
+    await new Promise(
+      resolve =>
+        requestAnimationFrame(
+          resolve
+        )
+    );
+
+
+    await renderPage(
+      1,
+      false
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "PDF restore error:",
+      error
+    );
+
+    /*
+      復元失敗時は
+      通常のPDF選択画面へ
+    */
+
+    startScreen.style.display =
+      "flex";
+
+    viewerScreen.style.display =
+      "none";
+
+  } finally {
+
+    loading.style.display =
+      "none";
+
+  }
+
+}
+
+    
     function wait(ms) {
   return new Promise(
     resolve => setTimeout(resolve, ms)
@@ -2045,6 +2225,8 @@ jumpTotal.textContent =
 
       }
     );
+
+    restoreSavedPDF();
 
   </script>
 
