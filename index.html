@@ -702,6 +702,10 @@ let pinchStartScale = 1;
 
 let tapTimer = null;
 
+let lastTapTime = 0;
+
+let doubleTapDetected = false;
+
 let slideInterval = 3000;
 
     function wait(ms) {
@@ -778,8 +782,22 @@ pdfArea.addEventListener(
 
     event.preventDefault();
 
+    /*
+      ダブルタップ直後なら
+      シングルタップ処理をしない
+    */
+
+    if (doubleTapDetected) {
+
+      doubleTapDetected = false;
+
+      return;
+    }
+
     if (tapTimer) {
+
       clearTimeout(tapTimer);
+
     }
 
     tapTimer =
@@ -791,81 +809,108 @@ pdfArea.addEventListener(
           await toggleControls();
 
         },
-        250
+        350
       );
 
   }
 );
 
-    pdfArea.addEventListener(
-  "dblclick",
-  event => {
-
-    event.preventDefault();
-
-    /*
-      シングルタップ処理をキャンセル
-    */
-
-    if (tapTimer) {
-
-      clearTimeout(tapTimer);
-
-      tapTimer = null;
-
-    }
-
-    if (!pdfDocument) {
-      return;
-    }
-
-    if (zoomScale === 1) {
-
-      zoomScale = 2;
-
-    } else {
-
-      zoomScale = 1;
-
-    }
-
-    applyZoom();
-
-  }
-);
+    
 
     pdfArea.addEventListener(
   "touchstart",
   event => {
 
-    if (
-      !pdfDocument ||
-      event.touches.length !== 2
-    ) {
+    if (!pdfDocument) {
       return;
     }
 
     /*
-      シングルタップ処理が
-      待機中ならキャンセル
+      2本指ならピンチ開始
     */
 
-    if (tapTimer) {
+    if (event.touches.length === 2) {
 
-      clearTimeout(tapTimer);
+      if (tapTimer) {
+        clearTimeout(tapTimer);
+        tapTimer = null;
+      }
 
-      tapTimer = null;
+      lastTapTime = 0;
 
+      pinchStartDistance =
+        getTouchDistance(
+          event.touches[0],
+          event.touches[1]
+        );
+
+      pinchStartScale =
+        zoomScale;
+
+      return;
     }
 
-    pinchStartDistance =
-      getTouchDistance(
-        event.touches[0],
-        event.touches[1]
-      );
 
-    pinchStartScale =
-      zoomScale;
+    /*
+      1本指ならダブルタップ判定
+    */
+
+    if (event.touches.length === 1) {
+
+      const now =
+        Date.now();
+
+      const timeDifference =
+        now - lastTapTime;
+
+      if (
+        timeDifference > 0 &&
+        timeDifference < 350
+      ) {
+
+        event.preventDefault();
+
+        doubleTapDetected = true;
+
+        lastTapTime = 0;
+
+        /*
+          待機中のシングルタップを取消
+        */
+
+        if (tapTimer) {
+
+          clearTimeout(tapTimer);
+
+          tapTimer = null;
+
+        }
+
+        /*
+          1倍 ⇄ 2倍
+        */
+
+        if (zoomScale > 1) {
+
+          zoomScale = 1;
+
+        } else {
+
+          zoomScale = 2;
+
+        }
+
+        applyZoom();
+
+      } else {
+
+        doubleTapDetected = false;
+
+        lastTapTime = now;
+
+      }
+
+    }
 
   },
   {
