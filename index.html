@@ -1014,15 +1014,55 @@ function openDatabase() {
         .promise;
 
 
-    currentPage = 1;
+    /*
+  前回見ていたページを取得
+*/
 
-    resetZoom();
+let savedPage =
+  Number(
+    localStorage.getItem(
+      "PDFSlideshowCurrentPage"
+    )
+  );
 
 
-    pageInput.value = 1;
+/*
+  保存データがない場合は1ページ目
+*/
 
-    pageInput.max =
-      pdfDocument.numPages;
+if (
+  !Number.isFinite(savedPage) ||
+  savedPage < 1
+) {
+
+  savedPage = 1;
+
+}
+
+
+/*
+  PDFの最終ページを
+  超えないようにする
+*/
+
+savedPage =
+  Math.min(
+    savedPage,
+    pdfDocument.numPages
+  );
+
+
+currentPage =
+  savedPage;
+
+resetZoom();
+
+
+pageInput.value =
+  savedPage;
+
+pageInput.max =
+  pdfDocument.numPages;
 
     jumpTotal.textContent =
       `/ ${pdfDocument.numPages}`;
@@ -1053,9 +1093,9 @@ function openDatabase() {
 
 
     await renderPage(
-      1,
-      false
-    );
+  savedPage,
+  false
+);
 
 
   } catch (error) {
@@ -1197,6 +1237,15 @@ function openDatabase() {
   isPanning = false;
 
   applyZoom();
+
+}
+
+    function saveCurrentPage() {
+
+  localStorage.setItem(
+    "PDFSlideshowCurrentPage",
+    String(currentPage)
+  );
 
 }
 
@@ -1793,17 +1842,21 @@ try {
 
 
         currentPage =
-          pageNumber;
+  pageNumber;
 
-        pageInput.value =
+pageInput.value =
   currentPage;
 
+pageInfo.textContent =
+  `${currentPage} / ${pdfDocument.numPages}`;
 
-        pageInfo.textContent =
-          `${currentPage} / ${pdfDocument.numPages}`;
+updateButtons();
 
+/*
+  現在のページを保存
+*/
 
-        updateButtons();
+saveCurrentPage();
 
   requestAnimationFrame(
   () => {
@@ -2155,6 +2208,16 @@ await renderPage(
 
 
           currentPage = 1;
+
+/*
+  新しいPDFは
+  1ページ目から開始
+*/
+
+localStorage.setItem(
+  "PDFSlideshowCurrentPage",
+  "1"
+);
 
 resetZoom();
 
