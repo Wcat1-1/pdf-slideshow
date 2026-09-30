@@ -318,6 +318,49 @@
 
   accent-color: white;
 }
+  #jumpSettings {
+  flex-shrink: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 8px;
+  padding: 7px 12px;
+
+  background: rgba(20,20,20,0.96);
+
+  color: #ccc;
+  font-size: 14px;
+}
+
+#pageInput {
+  width: 62px;
+
+  padding: 7px 8px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #2c2c2e;
+  color: white;
+
+  font-size: 16px;
+  text-align: center;
+}
+
+#jumpButton {
+  padding: 7px 14px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #3a3a3c;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 600;
+}
     
   </style>
 </head>
@@ -412,6 +455,26 @@
     <span>ループ</span>
 
   </label>
+
+</div>
+
+    <div id="jumpSettings">
+
+  <span>ページ</span>
+
+  <input
+    id="pageInput"
+    type="number"
+    inputmode="numeric"
+    min="1"
+    value="1"
+  >
+
+  <span id="jumpTotal">/ 1</span>
+
+  <button id="jumpButton">
+    移動
+  </button>
 
 </div>
     
@@ -521,6 +584,15 @@
 
     const loopToggle =
   document.getElementById("loopToggle");
+
+    const pageInput =
+  document.getElementById("pageInput");
+
+const jumpTotal =
+  document.getElementById("jumpTotal");
+
+const jumpButton =
+  document.getElementById("jumpButton");
 
 
 
@@ -704,6 +776,9 @@
         currentPage =
           pageNumber;
 
+        pageInput.value =
+  currentPage;
+
 
         pageInfo.textContent =
           `${currentPage} / ${pdfDocument.numPages}`;
@@ -807,6 +882,67 @@
 
       }
     );
+
+    jumpButton.addEventListener(
+  "click",
+  async () => {
+
+    if (
+      !pdfDocument ||
+      isRendering
+    ) {
+      return;
+    }
+
+    let targetPage =
+      Number(pageInput.value);
+
+    if (!Number.isFinite(targetPage)) {
+      return;
+    }
+
+    targetPage =
+      Math.floor(targetPage);
+
+    /*
+      範囲外なら自動補正
+    */
+
+    targetPage =
+      Math.max(
+        1,
+        Math.min(
+          targetPage,
+          pdfDocument.numPages
+        )
+      );
+
+    pageInput.value =
+      targetPage;
+
+    await renderPage(
+      targetPage
+    );
+
+  }
+);
+
+    pageInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      jumpButton.click();
+
+      pageInput.blur();
+
+    }
+
+  }
+);
 
 
 
@@ -965,6 +1101,14 @@ await renderPage(
 
 
           currentPage = 1;
+
+          pageInput.value = 1;
+
+pageInput.max =
+  pdfDocument.numPages;
+
+jumpTotal.textContent =
+  `/ ${pdfDocument.numPages}`;
 
 
           fileName.textContent =
