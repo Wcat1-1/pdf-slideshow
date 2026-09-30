@@ -473,6 +473,101 @@
   overflow: hidden;
   pointer-events: none;
 }
+
+    /* =========================
+   PDF履歴画面
+   ========================= */
+
+#historyOverlay {
+  position: fixed;
+
+  inset: 0;
+
+  display: none;
+
+  justify-content: center;
+  align-items: flex-end;
+
+  z-index: 200;
+
+  background:
+    rgba(0, 0, 0, 0.55);
+}
+
+#historyOverlay.show {
+  display: flex;
+}
+
+
+#historyPanel {
+  width: 100%;
+  max-height: 70dvh;
+
+  padding:
+    18px
+    16px
+    calc(
+      18px +
+      env(safe-area-inset-bottom)
+    );
+
+  background: #1c1c1e;
+
+  border-radius:
+    20px
+    20px
+    0
+    0;
+
+  overflow: hidden;
+}
+
+
+#historyHeader {
+  display: flex;
+
+  justify-content:
+    space-between;
+
+  align-items: center;
+
+  margin-bottom: 16px;
+
+  font-size: 18px;
+}
+
+
+#closeHistoryButton {
+  padding: 8px 14px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: #3a3a3c;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+#historyList {
+  max-height: 55dvh;
+
+  overflow-y: auto;
+
+  -webkit-overflow-scrolling:
+    touch;
+}
+
+
+.historyEmpty {
+  padding: 30px 10px;
+
+  color: #aaa;
+
+  text-align: center;
+}
     
   </style>
 </head>
@@ -651,7 +746,37 @@
 
   </section>
 
+<!-- =======================
+     PDF履歴画面
+     ======================= -->
 
+<div id="historyOverlay">
+
+  <div id="historyPanel">
+
+    <div id="historyHeader">
+
+      <strong>
+        最近使ったPDF
+      </strong>
+
+      <button id="closeHistoryButton">
+        閉じる
+      </button>
+
+    </div>
+
+    <div id="historyList">
+
+      <div class="historyEmpty">
+        履歴はまだありません
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
   <!-- 読み込み中 -->
 
@@ -691,6 +816,21 @@
     const historyButton =
   document.getElementById(
     "historyButton"
+  );
+
+    const historyOverlay =
+  document.getElementById(
+    "historyOverlay"
+  );
+
+const historyList =
+  document.getElementById(
+    "historyList"
+  );
+
+const closeHistoryButton =
+  document.getElementById(
+    "closeHistoryButton"
   );
 
     const startScreen =
@@ -2249,10 +2389,40 @@ await renderPage(
   "click",
   () => {
 
-    /*
-      履歴画面は
-      次のSTEPで実装
-    */
+    stopPlayback();
+
+    historyOverlay.classList.add(
+      "show"
+    );
+
+  }
+);
+
+    closeHistoryButton.addEventListener(
+  "click",
+  () => {
+
+    historyOverlay.classList.remove(
+      "show"
+    );
+
+  }
+);
+
+    historyOverlay.addEventListener(
+  "click",
+  event => {
+
+    if (
+      event.target ===
+      historyOverlay
+    ) {
+
+      historyOverlay.classList.remove(
+        "show"
+      );
+
+    }
 
   }
 );
