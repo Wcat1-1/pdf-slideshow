@@ -1141,6 +1141,7 @@ function openDatabase() {
           "readwrite"
         );
 
+
       const store =
         transaction.objectStore(
           HISTORY_STORE_NAME
@@ -1148,13 +1149,16 @@ function openDatabase() {
 
 
       /*
-        ファイル名とサイズから
-        PDFごとのIDを作る
+        PDFごとの識別ID
       */
 
       const id =
         `${name}_${arrayBuffer.byteLength}`;
 
+
+      /*
+        今回開いたPDFを保存
+      */
 
       store.put({
         id: id,
@@ -1162,6 +1166,59 @@ function openDatabase() {
         data: arrayBuffer,
         savedAt: Date.now()
       });
+
+
+      /*
+        保存されている履歴を
+        すべて取得
+      */
+
+      const request =
+        store.getAll();
+
+
+      request.onsuccess =
+        () => {
+
+          const history =
+            request.result || [];
+
+
+          /*
+            新しい順に並べる
+          */
+
+          history.sort(
+            (a, b) =>
+              b.savedAt -
+              a.savedAt
+          );
+
+
+          /*
+            6件目以降を取得
+          */
+
+          const oldItems =
+            history.slice(5);
+
+
+          /*
+            古いPDFを
+            IndexedDBから削除
+          */
+
+          oldItems.forEach(
+            item => {
+
+              store.delete(
+                item.id
+              );
+
+            }
+          );
+
+        };
 
 
       transaction.oncomplete =
