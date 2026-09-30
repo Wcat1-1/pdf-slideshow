@@ -966,6 +966,12 @@ let doubleTapDetected = false;
 
 let slideInterval = 3000;
 
+    /*
+  現在開いているPDFの識別ID
+*/
+
+let currentPDFId = null;
+
     /* =========================
    PDF保存用データベース
    ========================= */
@@ -1359,6 +1365,13 @@ function openDatabase() {
     const pdfData =
       item.data.slice(0);
 
+    /*
+  現在のPDF IDを設定
+*/
+
+currentPDFId =
+  item.id;
+
 
     /*
       先に「最後に開いたPDF」を保存
@@ -1397,13 +1410,38 @@ function openDatabase() {
       1ページ目から開始
     */
 
-    currentPage = 1;
+    /*
+  このPDFで最後に見ていた
+  ページを取得
+*/
+
+let savedPage =
+  Number(
+    localStorage.getItem(
+      `PDFSlideshowPage_${currentPDFId}`
+    )
+  );
 
 
-    localStorage.setItem(
-      "PDFSlideshowCurrentPage",
-      "1"
-    );
+if (
+  !Number.isFinite(savedPage) ||
+  savedPage < 1
+) {
+
+  savedPage = 1;
+
+}
+
+
+savedPage =
+  Math.min(
+    savedPage,
+    pdfDocument.numPages
+  );
+
+
+currentPage =
+  savedPage;
 
 
     resetZoom();
@@ -1421,7 +1459,8 @@ function openDatabase() {
       ページ表示を更新
     */
 
-    pageInput.value = 1;
+    pageInput.value =
+  savedPage;
 
     pageInput.max =
       pdfDocument.numPages;
@@ -1432,7 +1471,7 @@ function openDatabase() {
 
 
     pageInfo.textContent =
-      `1 / ${pdfDocument.numPages}`;
+  `${savedPage} / ${pdfDocument.numPages}`;
 
 
     /*
@@ -1474,9 +1513,9 @@ function openDatabase() {
     */
 
     await renderPage(
-      1,
-      false
-    );
+  savedPage,
+  false
+);
 
 
   } catch (error) {
@@ -1547,11 +1586,18 @@ function openDatabase() {
 
 
           resolve({
-            arrayBuffer: savedPDF,
-            name:
-              savedName ||
-              "保存したPDF"
-          });
+  arrayBuffer: savedPDF,
+
+  name:
+    savedName ||
+    "保存したPDF",
+
+  id:
+    `${
+      savedName ||
+      "保存したPDF"
+    }_${savedPDF.byteLength}`
+});
 
         };
 
@@ -1589,6 +1635,13 @@ function openDatabase() {
       return;
     }
 
+    /*
+  復元したPDFのID
+*/
+
+currentPDFId =
+  saved.id;
+
 
     loading.style.display =
       "flex";
@@ -1610,8 +1663,8 @@ function openDatabase() {
 let savedPage =
   Number(
     localStorage.getItem(
-      "PDFSlideshowCurrentPage"
-    )
+  `PDFSlideshowPage_${currentPDFId}`
+)
   );
 
 
@@ -1831,8 +1884,12 @@ pageInput.max =
 
     function saveCurrentPage() {
 
+  if (!currentPDFId) {
+    return;
+  }
+
   localStorage.setItem(
-    "PDFSlideshowCurrentPage",
+    `PDFSlideshowPage_${currentPDFId}`,
     String(currentPage)
   );
 
@@ -2886,9 +2943,18 @@ await renderPage(
         try {
 
           const arrayBuffer =
-            await file.arrayBuffer();
+  await file.arrayBuffer();
 
-          await savePDF(
+
+/*
+  このPDFの識別IDを設定
+*/
+
+currentPDFId =
+  `${file.name}_${arrayBuffer.byteLength}`;
+
+
+await savePDF(
   arrayBuffer,
   file.name
 );
@@ -2914,10 +2980,7 @@ await renderPage(
   1ページ目から開始
 */
 
-localStorage.setItem(
-  "PDFSlideshowCurrentPage",
-  "1"
-);
+saveCurrentPage();
 
 resetZoom();
 
