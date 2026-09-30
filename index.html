@@ -830,6 +830,22 @@ let slideInterval = 3000;
 
 }
 
+    function resetZoom() {
+
+  zoomScale = 1;
+
+  panX = 0;
+  panY = 0;
+
+  pinchStartDistance = 0;
+  pinchStartScale = 1;
+
+  isPanning = false;
+
+  applyZoom();
+
+}
+
     function getTouchDistance(
   touch1,
   touch2
@@ -1255,15 +1271,26 @@ if (
   animate = true
 ) {
 
-      if (
-        !pdfDocument ||
-        isRendering
-      ) {
-        return;
-      }
+  if (
+    !pdfDocument ||
+    isRendering
+  ) {
+    return;
+  }
 
+  /*
+    別ページへ移動するときだけ
+    ズームをリセット
+  */
 
-      isRendering = true;
+  if (pageNumber !== currentPage) {
+
+    resetZoom();
+
+  }
+
+  isRendering = true;
+
 
 if (animate) {
 
@@ -1757,12 +1784,7 @@ await renderPage(
 
           currentPage = 1;
 
-zoomScale = 1;
-
-panX = 0;
-panY = 0;
-
-applyZoom();
+resetZoom();
 
 pageInput.value = 1;
 
