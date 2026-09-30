@@ -1258,6 +1258,33 @@ pageInput.max =
 
 }
 
+    /*
+  ループ設定を保存
+*/
+
+function saveLoopSetting() {
+
+  localStorage.setItem(
+    "PDFSlideshowLoop",
+    String(loopToggle.checked)
+  );
+
+}
+
+
+/*
+  切替効果を保存
+*/
+
+function saveTransitionSetting() {
+
+  localStorage.setItem(
+    "PDFSlideshowTransition",
+    transitionSelect.value
+  );
+
+}
+
     function getTouchDistance(
   touch1,
   touch2
@@ -1674,7 +1701,31 @@ if (
   }
 );
 
+    /*
+  ループ設定変更
+*/
 
+loopToggle.addEventListener(
+  "change",
+  () => {
+
+    saveLoopSetting();
+
+  }
+);
+
+/*
+  切替効果変更
+*/
+
+transitionSelect.addEventListener(
+  "change",
+  () => {
+
+    saveTransitionSetting();
+
+  }
+);
 
     /* =========================
        PDF描画
@@ -2365,6 +2416,42 @@ if (
 
   intervalSelect.value =
     String(savedInterval);
+
+}
+
+    /*
+  保存したループ設定を復元
+*/
+
+const savedLoop =
+  localStorage.getItem(
+    "PDFSlideshowLoop"
+  );
+
+if (savedLoop !== null) {
+
+  loopToggle.checked =
+    savedLoop === "true";
+
+}
+
+    /*
+  保存した切替効果を復元
+*/
+
+const savedTransition =
+  localStorage.getItem(
+    "PDFSlideshowTransition"
+  );
+
+if (
+  savedTransition === "fade" ||
+  savedTransition === "slide" ||
+  savedTransition === "zoom"
+) {
+
+  transitionSelect.value =
+    savedTransition;
 
 }
     
