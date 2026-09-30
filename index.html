@@ -6,6 +6,7 @@
   <meta name="viewport"
         content="width=device-width,
                  initial-scale=1.0,
+                 maximum-scale=1.0,
                  viewport-fit=cover">
 
   <meta name="apple-mobile-web-app-capable"
@@ -21,20 +22,31 @@
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
-      min-height: 100vh;
-      min-height: 100dvh;
-
+      width: 100%;
+      height: 100%;
       background: #111;
       color: white;
-
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    /* PDF選択画面 */
+    #startScreen {
+      min-height: 100vh;
+      min-height: 100dvh;
 
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
 
@@ -46,27 +58,21 @@
         env(safe-area-inset-bottom);
     }
 
-    main {
-      width: 100%;
-      max-width: 500px;
-    }
-
     h1 {
       font-size: 32px;
-      margin-bottom: 12px;
+      margin: 0 0 12px;
     }
 
-    p {
+    #startScreen p {
       color: #aaa;
       margin-bottom: 32px;
     }
 
     .selectButton {
       display: inline-block;
-
       padding: 16px 28px;
 
-      background: #fff;
+      background: white;
       color: #111;
 
       border-radius: 14px;
@@ -81,33 +87,121 @@
       display: none;
     }
 
-    #fileName {
-      margin-top: 25px;
-      color: #ccc;
-      word-break: break-all;
-    }
-
-    #success {
+    /* PDF表示画面 */
+    #viewerScreen {
       display: none;
 
-      margin-top: 20px;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
 
-      font-size: 18px;
+      flex-direction: column;
+    }
+
+    #topBar {
+      min-height: 56px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding:
+        calc(8px + env(safe-area-inset-top))
+        14px
+        8px;
+
+      background: rgba(20, 20, 20, 0.95);
+    }
+
+    #fileName {
+      flex: 1;
+
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      font-size: 14px;
+      text-align: left;
+    }
+
+    #pageInfo {
+      margin-left: 12px;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    #pdfArea {
+      flex: 1;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: auto;
+
+      padding: 10px;
+    }
+
+    #pdfCanvas {
+      display: block;
+
+      max-width: 100%;
+      max-height: 100%;
+
+      background: white;
+
+      box-shadow:
+        0 4px 20px rgba(0,0,0,0.45);
+    }
+
+    #loading {
+      position: fixed;
+      inset: 0;
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      background: rgba(0,0,0,0.7);
+
+      z-index: 100;
+    }
+
+    #loadingBox {
+      padding: 18px 24px;
+
+      background: #222;
+
+      border-radius: 14px;
+
       font-weight: 600;
+    }
+
+    #errorMessage {
+      display: none;
+
+      padding: 20px;
+
+      color: #ff8080;
+
+      text-align: center;
     }
   </style>
 </head>
 
+
 <body>
 
-  <main>
+  <!-- PDF選択画面 -->
+  <section id="startScreen">
 
     <h1>PDF Slideshow</h1>
 
     <p>表示するPDFを選択してください</p>
 
-    <label class="selectButton"
-           for="pdfInput">
+    <label
+      class="selectButton"
+      for="pdfInput">
       PDFを選択
     </label>
 
@@ -117,43 +211,257 @@
       accept="application/pdf,.pdf"
     >
 
-    <div id="fileName"></div>
+    <div id="errorMessage"></div>
 
-    <div id="success">
-      ✓ PDFを読み込みました
+  </section>
+
+
+  <!-- PDF表示画面 -->
+  <section id="viewerScreen">
+
+    <div id="topBar">
+
+      <div id="fileName">
+        PDF
+      </div>
+
+      <div id="pageInfo">
+        1 / 1
+      </div>
+
     </div>
 
-  </main>
+
+    <div id="pdfArea">
+
+      <canvas id="pdfCanvas"></canvas>
+
+    </div>
+
+  </section>
 
 
-  <script>
+  <!-- 読み込み表示 -->
+  <div id="loading">
+
+    <div id="loadingBox">
+      PDFを読み込み中...
+    </div>
+
+  </div>
+
+
+  <!-- PDF.js -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs"
+    type="module">
+  </script>
+
+
+  <script type="module">
+
+    import * as pdfjsLib
+      from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
 
     const pdfInput =
       document.getElementById("pdfInput");
 
+    const startScreen =
+      document.getElementById("startScreen");
+
+    const viewerScreen =
+      document.getElementById("viewerScreen");
+
+    const canvas =
+      document.getElementById("pdfCanvas");
+
+    const context =
+      canvas.getContext("2d");
+
     const fileName =
       document.getElementById("fileName");
 
-    const success =
-      document.getElementById("success");
+    const pageInfo =
+      document.getElementById("pageInfo");
+
+    const loading =
+      document.getElementById("loading");
+
+    const errorMessage =
+      document.getElementById("errorMessage");
+
+
+    let pdfDocument = null;
+
+    let currentPage = 1;
+
+
+    async function renderPage(pageNumber) {
+
+      const page =
+        await pdfDocument.getPage(pageNumber);
+
+
+      const originalViewport =
+        page.getViewport({
+          scale: 1
+        });
+
+
+      /*
+        iPhoneの画面幅に合わせて
+        PDFを縮小・拡大します。
+      */
+
+      const availableWidth =
+        window.innerWidth - 20;
+
+      const availableHeight =
+        window.innerHeight - 100;
+
+
+      const widthScale =
+        availableWidth /
+        originalViewport.width;
+
+      const heightScale =
+        availableHeight /
+        originalViewport.height;
+
+
+      const scale =
+        Math.min(
+          widthScale,
+          heightScale
+        );
+
+
+      /*
+        Retinaディスプレイ対応
+      */
+
+      const pixelRatio =
+        window.devicePixelRatio || 1;
+
+
+      const viewport =
+        page.getViewport({
+          scale:
+            scale * pixelRatio
+        });
+
+
+      canvas.width =
+        viewport.width;
+
+      canvas.height =
+        viewport.height;
+
+
+      canvas.style.width =
+        `${viewport.width / pixelRatio}px`;
+
+      canvas.style.height =
+        `${viewport.height / pixelRatio}px`;
+
+
+      await page.render({
+
+        canvasContext:
+          context,
+
+        viewport:
+          viewport
+
+      }).promise;
+
+
+      pageInfo.textContent =
+        `${pageNumber} / ${pdfDocument.numPages}`;
+    }
 
 
     pdfInput.addEventListener(
       "change",
-      function () {
+      async function () {
 
         const file =
           pdfInput.files[0];
+
 
         if (!file) {
           return;
         }
 
-        fileName.textContent =
-          file.name;
 
-        success.style.display =
-          "block";
+        loading.style.display =
+          "flex";
+
+        errorMessage.style.display =
+          "none";
+
+
+        try {
+
+          const arrayBuffer =
+            await file.arrayBuffer();
+
+
+          pdfDocument =
+            await pdfjsLib
+              .getDocument({
+                data: arrayBuffer
+              })
+              .promise;
+
+
+          currentPage = 1;
+
+
+          fileName.textContent =
+            file.name;
+
+
+          startScreen.style.display =
+            "none";
+
+          viewerScreen.style.display =
+            "flex";
+
+
+          await renderPage(
+            currentPage
+          );
+
+
+        } catch (error) {
+
+          console.error(error);
+
+
+          errorMessage.textContent =
+            "PDFを読み込めませんでした。別のPDFで試してください。";
+
+          errorMessage.style.display =
+            "block";
+
+
+          startScreen.style.display =
+            "flex";
+
+          viewerScreen.style.display =
+            "none";
+
+        }
+
+
+        loading.style.display =
+          "none";
 
       }
     );
