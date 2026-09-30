@@ -731,7 +731,89 @@ let slideInterval = 3000;
   );
 }
 
+    function clampPan() {
+
+  /*
+    1倍なら必ず中央
+  */
+
+  if (zoomScale <= 1) {
+
+    panX = 0;
+    panY = 0;
+
+    return;
+  }
+
+
+  /*
+    現在のCanvas表示サイズ
+  */
+
+  const canvasWidth =
+    canvas.offsetWidth;
+
+  const canvasHeight =
+    canvas.offsetHeight;
+
+
+  /*
+    拡大後に画面から
+    はみ出す量を計算
+  */
+
+  const maxPanX =
+    Math.max(
+      0,
+      (
+        canvasWidth *
+        zoomScale -
+        (
+        pdfArea.clientWidth - 16
+          )
+      ) / 2
+    );
+
+  const maxPanY =
+    Math.max(
+      0,
+      (
+        canvasHeight *
+        zoomScale -
+        (
+        pdfArea.clientHeight - 16
+          )
+      ) / 2
+    );
+
+
+  /*
+    移動可能範囲に制限
+  */
+
+  panX =
+    Math.max(
+      -maxPanX,
+      Math.min(
+        panX,
+        maxPanX
+      )
+    );
+
+  panY =
+    Math.max(
+      -maxPanY,
+      Math.min(
+        panY,
+        maxPanY
+      )
+    );
+
+}
+    
     function applyZoom() {
+
+  clampPan();
 
   canvas.style.scale =
     zoomScale;
