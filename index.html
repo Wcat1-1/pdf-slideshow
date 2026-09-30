@@ -646,6 +646,8 @@ const jumpButton =
 
     let playTimer = null;
 
+    let controlsHidden = false;
+
 
     /*
       最初は3秒ごとに
@@ -657,6 +659,56 @@ const jumpButton =
     function wait(ms) {
   return new Promise(
     resolve => setTimeout(resolve, ms)
+  );
+}
+
+    async function toggleControls() {
+
+  if (!pdfDocument || isRendering) {
+    return;
+  }
+
+      pdfArea.addEventListener(
+  "click",
+  async event => {
+
+    /*
+      PDF表示領域をタップしたときだけ
+      操作パネルを切り替える
+    */
+
+    event.preventDefault();
+
+    await toggleControls();
+
+  }
+);
+
+  controlsHidden =
+    !controlsHidden;
+
+  viewerScreen.classList.toggle(
+    "controlsHidden",
+    controlsHidden
+  );
+
+  /*
+    操作パネルのアニメーションが
+    終わるのを少し待つ
+  */
+
+  await wait(280);
+
+  /*
+    PDF表示領域が広がった／狭くなったので
+    現在ページを新しいサイズで再描画
+  */
+
+  isRendering = false;
+
+  await renderPage(
+    currentPage,
+    false
   );
 }
 
@@ -688,7 +740,10 @@ const jumpButton =
        PDF描画
        ========================= */
 
-    async function renderPage(pageNumber) {
+    async function renderPage(
+  pageNumber,
+  animate = true
+) {
 
       if (
         !pdfDocument ||
@@ -700,11 +755,15 @@ const jumpButton =
 
       isRendering = true;
 
-canvas.classList.add(
-  "pageFadeOut"
-);
+if (animate) {
 
-await wait(280);
+  canvas.classList.add(
+    "pageFadeOut"
+  );
+
+  await wait(280);
+
+}
 
 try {
 
@@ -1262,8 +1321,9 @@ jumpTotal.textContent =
               isRendering = false;
 
               renderPage(
-                currentPage
-              );
+  currentPage,
+  false
+);
 
             },
             200
