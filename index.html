@@ -700,6 +700,23 @@ let pinchStartDistance = 0;
 
 let pinchStartScale = 1;
 
+/* PDFの移動位置 */
+
+let panX = 0;
+let panY = 0;
+
+/* ドラッグ開始位置 */
+
+let panStartX = 0;
+let panStartY = 0;
+
+/* ドラッグ開始時のPDF位置 */
+
+let panStartOffsetX = 0;
+let panStartOffsetY = 0;
+
+let isPanning = false;
+
 let tapTimer = null;
 
 let lastTapTime = 0;
@@ -718,6 +735,9 @@ let slideInterval = 3000;
 
   canvas.style.scale =
     zoomScale;
+
+  canvas.style.translate =
+    `${panX}px ${panY}px`;
 
 }
 
@@ -857,6 +877,29 @@ pdfArea.addEventListener(
 
     if (event.touches.length === 1) {
 
+      /*
+  拡大中なら
+  ドラッグ開始位置を記録
+*/
+
+if (zoomScale > 1) {
+
+  isPanning = true;
+
+  panStartX =
+    event.touches[0].clientX;
+
+  panStartY =
+    event.touches[0].clientY;
+
+  panStartOffsetX =
+    panX;
+
+  panStartOffsetY =
+    panY;
+
+}
+
       const now =
         Date.now();
 
@@ -892,15 +935,18 @@ pdfArea.addEventListener(
 
         if (zoomScale > 1) {
 
-          zoomScale = 1;
+  zoomScale = 1;
 
-        } else {
+  panX = 0;
+  panY = 0;
 
-          zoomScale = 2;
+} else {
 
-        }
+  zoomScale = 2;
 
-        applyZoom();
+}
+
+applyZoom();
 
       } else {
 
@@ -922,43 +968,93 @@ pdfArea.addEventListener(
   "touchmove",
   event => {
 
+    /*
+      2本指
+      → ピンチズーム
+    */
+
     if (
-      event.touches.length !== 2 ||
-      pinchStartDistance <= 0
+      event.touches.length === 2 &&
+      pinchStartDistance > 0
     ) {
+
+      event.preventDefault();
+
+      const currentDistance =
+        getTouchDistance(
+          event.touches[0],
+          event.touches[1]
+        );
+
+      const pinchRatio =
+        currentDistance /
+        pinchStartDistance;
+
+      zoomScale =
+        pinchStartScale *
+        pinchRatio;
+
+      zoomScale =
+        Math.max(
+          1,
+          Math.min(
+            zoomScale,
+            4
+          )
+        );
+
+      /*
+        1倍まで縮小したら
+        中央へ戻す
+      */
+
+      if (zoomScale <= 1) {
+
+        zoomScale = 1;
+
+        panX = 0;
+        panY = 0;
+
+      }
+
+      applyZoom();
+
       return;
     }
 
-    event.preventDefault();
-
-    const currentDistance =
-      getTouchDistance(
-        event.touches[0],
-        event.touches[1]
-      );
-
-    const pinchRatio =
-      currentDistance /
-      pinchStartDistance;
-
-    zoomScale =
-      pinchStartScale *
-      pinchRatio;
 
     /*
-      1倍〜4倍に制限
+      1本指 + 拡大中
+      → PDFを移動
     */
 
-    zoomScale =
-      Math.max(
-        1,
-        Math.min(
-          zoomScale,
-          4
-        )
-      );
+    if (
+      event.touches.length === 1 &&
+      zoomScale > 1 &&
+      isPanning
+    ) {
 
-    applyZoom();
+      event.preventDefault();
+
+      const moveX =
+        event.touches[0].clientX -
+        panStartX;
+
+      const moveY =
+        event.touches[0].clientY -
+        panStartY;
+
+      panX =
+        panStartOffsetX +
+        moveX;
+
+      panY =
+        panStartOffsetY +
+        moveY;
+
+      applyZoom();
+
+    }
 
   },
   {
@@ -976,6 +1072,12 @@ pdfArea.addEventListener(
 
       pinchStartScale =
         zoomScale;
+
+    }
+
+    if (event.touches.length === 0) {
+
+      isPanning = false;
 
     }
 
@@ -1518,11 +1620,15 @@ await renderPage(
 
 
           currentPage = 1;
-          
-          zoomScale = 1;
+
+zoomScale = 1;
+
+panX = 0;
+panY = 0;
+
 applyZoom();
 
-          pageInput.value = 1;
+pageInput.value = 1;
 
 pageInput.max =
   pdfDocument.numPages;
