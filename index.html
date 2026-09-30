@@ -274,7 +274,35 @@
 
       font-weight: 600;
     }
+    
+#playbackSettings {
+  flex-shrink: 0;
 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 12px;
+  padding: 8px 12px;
+
+  background: rgba(20,20,20,0.96);
+
+  color: #ccc;
+  font-size: 14px;
+}
+
+#intervalSelect {
+  padding: 7px 12px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: #2c2c2e;
+  color: white;
+
+  font-size: 14px;
+}
+    
   </style>
 </head>
 
@@ -341,7 +369,20 @@
     </main>
 
 
+<div id="playbackSettings">
 
+  <span>再生間隔</span>
+
+  <select id="intervalSelect">
+    <option value="1000">1秒</option>
+    <option value="2000">2秒</option>
+    <option value="3000" selected>3秒</option>
+    <option value="5000">5秒</option>
+    <option value="10000">10秒</option>
+  </select>
+
+</div>
+    
     <footer id="bottomBar">
 
       <button
@@ -443,6 +484,9 @@
     const pdfArea =
       document.getElementById("pdfArea");
 
+    const intervalSelect =
+  document.getElementById("intervalSelect");
+
 
 
     /* =========================
@@ -466,6 +510,28 @@
     */
 
     let slideInterval = 3000;
+
+    intervalSelect.addEventListener(
+  "change",
+  () => {
+
+    slideInterval =
+      Number(intervalSelect.value);
+
+    /*
+      再生中に変更した場合は
+      新しい秒数でタイマーを作り直す
+    */
+
+    if (isPlaying) {
+
+      stopPlayback();
+      startPlayback();
+
+    }
+
+  }
+);
 
 
 
