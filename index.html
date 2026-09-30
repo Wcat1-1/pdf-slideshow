@@ -2,39 +2,163 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        content="width=device-width,
+                 initial-scale=1.0,
+                 viewport-fit=cover">
+
+  <meta name="apple-mobile-web-app-capable"
+        content="yes">
+
+  <meta name="apple-mobile-web-app-status-bar-style"
+        content="black">
+
   <title>PDF Slideshow</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
+
       background: #111;
       color: white;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
 
       display: flex;
       justify-content: center;
       align-items: center;
+
       text-align: center;
+
+      padding:
+        env(safe-area-inset-top)
+        20px
+        env(safe-area-inset-bottom);
+    }
+
+    main {
+      width: 100%;
+      max-width: 500px;
     }
 
     h1 {
+      font-size: 32px;
       margin-bottom: 12px;
     }
 
     p {
       color: #aaa;
+      margin-bottom: 32px;
+    }
+
+    .selectButton {
+      display: inline-block;
+
+      padding: 16px 28px;
+
+      background: #fff;
+      color: #111;
+
+      border-radius: 14px;
+
+      font-size: 18px;
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    #pdfInput {
+      display: none;
+    }
+
+    #fileName {
+      margin-top: 25px;
+      color: #ccc;
+      word-break: break-all;
+    }
+
+    #success {
+      display: none;
+
+      margin-top: 20px;
+
+      font-size: 18px;
+      font-weight: 600;
     }
   </style>
 </head>
 
 <body>
+
   <main>
+
     <h1>PDF Slideshow</h1>
-    <p>iPhone版 動作テスト成功！</p>
+
+    <p>表示するPDFを選択してください</p>
+
+    <label class="selectButton"
+           for="pdfInput">
+      PDFを選択
+    </label>
+
+    <input
+      id="pdfInput"
+      type="file"
+      accept="application/pdf,.pdf"
+    >
+
+    <div id="fileName"></div>
+
+    <div id="success">
+      ✓ PDFを読み込みました
+    </div>
+
   </main>
+
+
+  <script>
+
+    const pdfInput =
+      document.getElementById("pdfInput");
+
+    const fileName =
+      document.getElementById("fileName");
+
+    const success =
+      document.getElementById("success");
+
+
+    pdfInput.addEventListener(
+      "change",
+      function () {
+
+        const file =
+          pdfInput.files[0];
+
+        if (!file) {
+          return;
+        }
+
+        fileName.textContent =
+          file.name;
+
+        success.style.display =
+          "block";
+
+      }
+    );
+
+  </script>
+
 </body>
 </html>
-
