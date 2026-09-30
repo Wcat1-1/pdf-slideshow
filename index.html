@@ -172,6 +172,29 @@
       font-size: 14px;
     }
 
+    #changePDFButton {
+  flex-shrink: 0;
+
+  margin-right: 12px;
+
+  padding: 7px 10px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #2c2c2e;
+  color: white;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+#changePDFButton:active {
+  transform: scale(0.96);
+}
+
 
     /* PDF表示領域 */
 
@@ -475,15 +498,19 @@
 
     <header id="topBar">
 
-      <div id="fileName">
-        PDF
-      </div>
+  <button id="changePDFButton">
+    PDF変更
+  </button>
 
-      <div id="pageInfo">
-        1 / 1
-      </div>
+  <div id="fileName">
+    PDF
+  </div>
 
-    </header>
+  <div id="pageInfo">
+    1 / 1
+  </div>
+
+</header>
 
 
 
@@ -628,6 +655,11 @@
 
     const pdfInput =
       document.getElementById("pdfInput");
+
+    const changePDFButton =
+  document.getElementById(
+    "changePDFButton"
+  );
 
     const startScreen =
       document.getElementById("startScreen");
@@ -2065,6 +2097,19 @@ await renderPage(
     /* =========================
        PDF選択
        ========================= */
+
+    changePDFButton.addEventListener(
+  "click",
+  () => {
+
+    stopPlayback();
+
+    pdfInput.value = "";
+
+    pdfInput.click();
+
+  }
+);
 
     pdfInput.addEventListener(
       "change",
