@@ -1189,7 +1189,6 @@ function openDatabase() {
   const db =
     await openDatabase();
 
-
   return new Promise(
     (resolve, reject) => {
 
@@ -1207,24 +1206,26 @@ function openDatabase() {
       const request =
         store.getAll();
 
+      let history = [];
+
 
       request.onsuccess =
         () => {
 
-          const history =
+          history =
             request.result || [];
 
+        };
 
-          /*
-            新しい順に並べる
-          */
+
+      transaction.oncomplete =
+        () => {
 
           history.sort(
             (a, b) =>
               b.savedAt -
               a.savedAt
           );
-
 
           db.close();
 
@@ -1235,13 +1236,13 @@ function openDatabase() {
         };
 
 
-      request.onerror =
+      transaction.onerror =
         () => {
 
           db.close();
 
           reject(
-            request.error
+            transaction.error
           );
 
         };
