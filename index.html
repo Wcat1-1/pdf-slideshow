@@ -279,11 +279,12 @@
   flex-shrink: 0;
 
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 
-  gap: 12px;
-  padding: 8px 12px;
+  gap: 14px;
+
+  padding: 8px 14px;
 
   background: rgba(20,20,20,0.96);
 
@@ -291,8 +292,16 @@
   font-size: 14px;
 }
 
+.settingItem,
+.loopSetting {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
 #intervalSelect {
-  padding: 7px 12px;
+  padding: 7px 10px;
 
   border: 0;
   border-radius: 10px;
@@ -301,6 +310,13 @@
   color: white;
 
   font-size: 14px;
+}
+
+#loopToggle {
+  width: 20px;
+  height: 20px;
+
+  accent-color: white;
 }
     
   </style>
@@ -371,15 +387,31 @@
 
 <div id="playbackSettings">
 
-  <span>再生間隔</span>
+  <div class="settingItem">
 
-  <select id="intervalSelect">
-    <option value="1000">1秒</option>
-    <option value="2000">2秒</option>
-    <option value="3000" selected>3秒</option>
-    <option value="5000">5秒</option>
-    <option value="10000">10秒</option>
-  </select>
+    <span>再生間隔</span>
+
+    <select id="intervalSelect">
+      <option value="1000">1秒</option>
+      <option value="2000">2秒</option>
+      <option value="3000" selected>3秒</option>
+      <option value="5000">5秒</option>
+      <option value="10000">10秒</option>
+    </select>
+
+  </div>
+
+
+  <label class="loopSetting">
+
+    <input
+      id="loopToggle"
+      type="checkbox"
+      checked>
+
+    <span>ループ</span>
+
+  </label>
 
 </div>
     
@@ -486,6 +518,9 @@
 
     const intervalSelect =
   document.getElementById("intervalSelect");
+
+    const loopToggle =
+  document.getElementById("loopToggle");
 
 
 
@@ -816,19 +851,27 @@
             */
 
             if (
-              currentPage >=
-              pdfDocument.numPages
-            ) {
+  currentPage >=
+  pdfDocument.numPages
+) {
 
-              stopPlayback();
+  if (loopToggle.checked) {
 
-              return;
-            }
+    await renderPage(1);
+
+  } else {
+
+    stopPlayback();
+
+  }
+
+  return;
+}
 
 
-            await renderPage(
-              currentPage + 1
-            );
+await renderPage(
+  currentPage + 1
+);
 
           },
 
