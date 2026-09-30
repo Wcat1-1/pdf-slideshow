@@ -717,6 +717,13 @@ let panStartOffsetY = 0;
 
 let isPanning = false;
 
+/* タップとドラッグの判定 */
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+let didDrag = false;
+
 let tapTimer = null;
 
 let lastTapTime = 0;
@@ -885,6 +892,19 @@ pdfArea.addEventListener(
     event.preventDefault();
 
     /*
+      ドラッグ直後なら
+      操作パネルを動かさない
+    */
+
+    if (didDrag) {
+
+      didDrag = false;
+
+      return;
+
+    }
+
+    /*
       ダブルタップ直後なら
       シングルタップ処理をしない
     */
@@ -933,6 +953,8 @@ pdfArea.addEventListener(
 
     if (event.touches.length === 2) {
 
+      didDrag = true;
+
       if (tapTimer) {
         clearTimeout(tapTimer);
         tapTimer = null;
@@ -958,6 +980,14 @@ pdfArea.addEventListener(
     */
 
     if (event.touches.length === 1) {
+
+      touchStartX =
+  event.touches[0].clientX;
+
+touchStartY =
+  event.touches[0].clientY;
+
+didDrag = false;
 
       /*
   拡大中なら
@@ -1125,6 +1155,30 @@ applyZoom();
       const moveY =
         event.touches[0].clientY -
         panStartY;
+
+      const totalMoveX =
+  event.touches[0].clientX -
+  touchStartX;
+
+const totalMoveY =
+  event.touches[0].clientY -
+  touchStartY;
+
+/*
+  開始位置から8px以上動いたら
+  ドラッグと判定
+*/
+
+if (
+  Math.hypot(
+    totalMoveX,
+    totalMoveY
+  ) > 8
+) {
+
+  didDrag = true;
+
+}
 
       panX =
         panStartOffsetX +
