@@ -192,11 +192,22 @@
     }
 
     #pdfCanvas {
-  transition: opacity 0.28s ease;
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
 }
 
 #pdfCanvas.pageFadeOut {
   opacity: 0;
+}
+
+    #pdfCanvas {
+  transform: translateX(0);
+}
+
+#pdfCanvas.pageSlideOut {
+  opacity: 0;
+  transform: translateX(-45px);
 }
 
 
@@ -789,9 +800,22 @@ pdfArea.addEventListener(
 
 if (animate) {
 
-  canvas.classList.add(
-    "pageFadeOut"
-  );
+  if (
+    transitionSelect.value ===
+    "slide"
+  ) {
+
+    canvas.classList.add(
+      "pageSlideOut"
+    );
+
+  } else {
+
+    canvas.classList.add(
+      "pageFadeOut"
+    );
+
+  }
 
   await wait(280);
 
@@ -926,9 +950,12 @@ try {
 
   requestAnimationFrame(
   () => {
+
     canvas.classList.remove(
-      "pageFadeOut"
+      "pageFadeOut",
+      "pageSlideOut"
     );
+
   }
 );
 
@@ -940,8 +967,9 @@ try {
   );
 
   canvas.classList.remove(
-    "pageFadeOut"
-  );
+  "pageFadeOut",
+  "pageSlideOut"
+);
 
 } finally {
 
