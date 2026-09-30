@@ -167,20 +167,22 @@
     /* PDF表示領域 */
 
     #pdfArea {
-      position: relative;
+  position: relative;
 
-      flex: 1;
+  flex: 1;
 
-      min-height: 0;
+  min-height: 0;
 
-      display: flex;
-      justify-content: center;
-      align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-      overflow: hidden;
+  overflow: hidden;
 
-      padding: 8px;
-    }
+  padding: 8px;
+
+  touch-action: manipulation;
+}
 
     #pdfCanvas {
       display: block;
@@ -692,15 +694,11 @@ const jumpButton =
 
     let controlsHidden = false;
 
-    let zoomScale = 1;
+let zoomScale = 1;
 
+let tapTimer = null;
 
-    /*
-      最初は3秒ごとに
-      ページを送ります。
-    */
-
-    let slideInterval = 3000;
+let slideInterval = 3000;
 
     function wait(ms) {
   return new Promise(
@@ -756,11 +754,25 @@ const jumpButton =
 
 pdfArea.addEventListener(
   "click",
-  async event => {
+  event => {
 
     event.preventDefault();
 
-    await toggleControls();
+    if (tapTimer) {
+      clearTimeout(tapTimer);
+    }
+
+    tapTimer =
+      setTimeout(
+        async () => {
+
+          tapTimer = null;
+
+          await toggleControls();
+
+        },
+        250
+      );
 
   }
 );
@@ -770,6 +782,18 @@ pdfArea.addEventListener(
   event => {
 
     event.preventDefault();
+
+    /*
+      シングルタップ処理をキャンセル
+    */
+
+    if (tapTimer) {
+
+      clearTimeout(tapTimer);
+
+      tapTimer = null;
+
+    }
 
     if (!pdfDocument) {
       return;
