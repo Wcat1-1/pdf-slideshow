@@ -712,49 +712,7 @@ pdfArea.addEventListener(
   }
 );
 
-      pdfArea.addEventListener(
-  "click",
-  async event => {
-
-    /*
-      PDF表示領域をタップしたときだけ
-      操作パネルを切り替える
-    */
-
-    event.preventDefault();
-
-    await toggleControls();
-
-  }
-);
-
-  controlsHidden =
-    !controlsHidden;
-
-  viewerScreen.classList.toggle(
-    "controlsHidden",
-    controlsHidden
-  );
-
-  /*
-    操作パネルのアニメーションが
-    終わるのを少し待つ
-  */
-
-  await wait(280);
-
-  /*
-    PDF表示領域が広がった／狭くなったので
-    現在ページを新しいサイズで再描画
-  */
-
-  isRendering = false;
-
-  await renderPage(
-    currentPage,
-    false
-  );
-}
+      
 
     intervalSelect.addEventListener(
   "change",
