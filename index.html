@@ -1349,20 +1349,19 @@ function openDatabase() {
   try {
 
     /*
-      PDF.jsで履歴PDFを開く
+      PDF.jsに渡す前に
+      データのコピーを作る
+
+      PDF.js側で元データが
+      転送されても影響を受けない
     */
 
-    pdfDocument =
-      await pdfjsLib
-        .getDocument({
-          data: item.data
-        })
-        .promise;
+    const pdfData =
+      item.data.slice(0);
 
 
     /*
-      このPDFを
-      「最後に開いたPDF」として保存
+      先に「最後に開いたPDF」を保存
     */
 
     await savePDF(
@@ -1382,7 +1381,20 @@ function openDatabase() {
 
 
     /*
-      今回は1ページ目から表示
+      ここでPDF.jsに渡す
+    */
+
+    pdfDocument =
+      await pdfjsLib
+        .getDocument({
+          data: pdfData
+        })
+        .promise;
+
+
+    /*
+      新しいPDFは
+      1ページ目から開始
     */
 
     currentPage = 1;
@@ -1397,6 +1409,18 @@ function openDatabase() {
     resetZoom();
 
 
+    /*
+      ファイル名を更新
+    */
+
+    fileName.textContent =
+      item.name;
+
+
+    /*
+      ページ表示を更新
+    */
+
     pageInput.value = 1;
 
     pageInput.max =
@@ -1407,15 +1431,29 @@ function openDatabase() {
       `/ ${pdfDocument.numPages}`;
 
 
-    fileName.textContent =
-      item.name;
+    pageInfo.textContent =
+      `1 / ${pdfDocument.numPages}`;
 
+
+    /*
+      Viewerを表示
+    */
 
     startScreen.style.display =
       "none";
 
     viewerScreen.style.display =
       "flex";
+
+
+    /*
+      描画状態を確実にリセット
+    */
+
+    isRendering = false;
+
+
+    resetZoom();
 
 
     /*
@@ -1429,6 +1467,11 @@ function openDatabase() {
         )
     );
 
+
+    /*
+      新しいPDFの
+      1ページ目を描画
+    */
 
     await renderPage(
       1,
