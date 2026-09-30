@@ -210,6 +210,11 @@
   transform: translateX(-45px);
 }
 
+    #pdfCanvas.pageZoomOut {
+  opacity: 0;
+  transform: scale(0.92);
+}
+
 
     /* =========================
        下部操作バー
@@ -809,6 +814,15 @@ if (animate) {
       "pageSlideOut"
     );
 
+  } else if (
+    transitionSelect.value ===
+    "zoom"
+  ) {
+
+    canvas.classList.add(
+      "pageZoomOut"
+    );
+
   } else {
 
     canvas.classList.add(
@@ -953,7 +967,8 @@ try {
 
     canvas.classList.remove(
       "pageFadeOut",
-      "pageSlideOut"
+      "pageSlideOut",
+      "pageZoomOut"
     );
 
   }
@@ -968,7 +983,8 @@ try {
 
   canvas.classList.remove(
   "pageFadeOut",
-  "pageSlideOut"
+  "pageSlideOut",
+  "pageZoomOut"
 );
 
 } finally {
