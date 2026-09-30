@@ -1277,25 +1277,42 @@ function openDatabase() {
 
 
     history.forEach(
-      item => {
+  item => {
 
-        const row =
-          document.createElement(
-            "div"
-          );
+    const row =
+      document.createElement(
+        "div"
+      );
 
-        row.className =
-          "historyItem";
+    row.className =
+      "historyItem";
 
-        row.textContent =
-          item.name;
+    row.textContent =
+      item.name;
 
-        historyList.appendChild(
-          row
+
+    /*
+      履歴のPDFをタップ
+    */
+
+    row.addEventListener(
+      "click",
+      async () => {
+
+        await openPDFHistoryItem(
+          item
         );
 
       }
     );
+
+
+    historyList.appendChild(
+      row
+    );
+
+  }
+);
 
 
   } catch (error) {
@@ -1309,6 +1326,132 @@ function openDatabase() {
 
 }
 
+    async function openPDFHistoryItem(
+  item
+) {
+
+  /*
+    履歴画面を閉じる
+  */
+
+  historyOverlay.classList.remove(
+    "show"
+  );
+
+
+  stopPlayback();
+
+
+  loading.style.display =
+    "flex";
+
+
+  try {
+
+    /*
+      PDF.jsで履歴PDFを開く
+    */
+
+    pdfDocument =
+      await pdfjsLib
+        .getDocument({
+          data: item.data
+        })
+        .promise;
+
+
+    /*
+      このPDFを
+      「最後に開いたPDF」として保存
+    */
+
+    await savePDF(
+      item.data,
+      item.name
+    );
+
+
+    /*
+      履歴の使用日時も更新
+    */
+
+    await savePDFToHistory(
+      item.data,
+      item.name
+    );
+
+
+    /*
+      今回は1ページ目から表示
+    */
+
+    currentPage = 1;
+
+
+    localStorage.setItem(
+      "PDFSlideshowCurrentPage",
+      "1"
+    );
+
+
+    resetZoom();
+
+
+    pageInput.value = 1;
+
+    pageInput.max =
+      pdfDocument.numPages;
+
+
+    jumpTotal.textContent =
+      `/ ${pdfDocument.numPages}`;
+
+
+    fileName.textContent =
+      item.name;
+
+
+    startScreen.style.display =
+      "none";
+
+    viewerScreen.style.display =
+      "flex";
+
+
+    /*
+      レイアウト確定を待つ
+    */
+
+    await new Promise(
+      resolve =>
+        requestAnimationFrame(
+          resolve
+        )
+    );
+
+
+    await renderPage(
+      1,
+      false
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "History PDF open error:",
+      error
+    );
+
+  } finally {
+
+    loading.style.display =
+      "none";
+
+  }
+
+}
+    
     async function loadSavedPDF() {
 
   const db =
